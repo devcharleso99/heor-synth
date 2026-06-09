@@ -26,6 +26,8 @@ from src.normalize.bronze_to_silver import build_silver_from_scenario
 from src.normalize.silver_qa import build_silver_qa_from_scenario
 from src.cohorts.t2dm_index import build_t2dm_index_from_scenario
 from src.cohorts.t2dm_attrition import build_t2dm_attrition_from_scenario
+from src.cohorts.t2dm_final import build_t2dm_final_from_scenario
+from src.analysis.baseline_characteristics import build_baseline_characteristics_from_scenario
 
 
 REQUIRED_DIRECTORIES = [
@@ -670,6 +672,101 @@ def t2dm_attrition(
     typer.echo(f"Excluded prior T1DM: {summary['excluded_prior_t1dm_n']}")
     typer.echo(f"Excluded pregnancy window: {summary['excluded_pregnancy_window_n']}")
     typer.echo(f"Final cohort N: {summary['final_cohort_n']}")
+
+
+
+@app.command("t2dm-final")
+def t2dm_final(
+    scenario_path: Path = typer.Option(
+        REPO_ROOT / "configs/scenarios/default_synthea.yaml",
+        "--scenario",
+        help="Path to the Synthea scenario YAML file.",
+    ),
+    parquet_output_path: Path | None = typer.Option(
+        None,
+        "--parquet-output",
+        help="Optional output path for the final cohort Parquet file.",
+    ),
+    csv_output_path: Path | None = typer.Option(
+        None,
+        "--csv-output",
+        help="Optional output path for the final cohort CSV file.",
+    ),
+    manifest_path: Path | None = typer.Option(
+        None,
+        "--manifest",
+        help="Optional output path for the final cohort manifest JSON.",
+    ),
+) -> None:
+    """Materialize the final Phase 1 T2DM analytical cohort."""
+    manifest = build_t2dm_final_from_scenario(
+        repo_root=REPO_ROOT,
+        scenario_path=scenario_path,
+        parquet_output_path=parquet_output_path,
+        csv_output_path=csv_output_path,
+        manifest_path=manifest_path,
+    )
+
+    summary = manifest["summary"]
+
+    typer.echo("T2DM final cohort build complete.")
+    typer.echo(f"Index cohort path: {manifest['index_cohort_path']}")
+    typer.echo(f"Parquet output: {manifest['parquet_output_path']}")
+    typer.echo(f"CSV output: {manifest['csv_output_path']}")
+    typer.echo(f"Manifest written: {manifest['manifest_path']}")
+    typer.echo(f"Index cohort rows: {summary['index_cohort_rows']}")
+    typer.echo(f"Final cohort rows: {summary['final_cohort_rows']}")
+    typer.echo(f"Excluded from final: {summary['excluded_from_final_rows']}")
+    typer.echo(f"Minimum age at index: {summary['min_age_at_index']}")
+    typer.echo(f"Maximum age at index: {summary['max_age_at_index']}")
+    typer.echo(f"Mean age at index: {summary['mean_age_at_index']}")
+
+
+
+@app.command("t2dm-baseline")
+def t2dm_baseline(
+    scenario_path: Path = typer.Option(
+        REPO_ROOT / "configs/scenarios/default_synthea.yaml",
+        "--scenario",
+        help="Path to the Synthea scenario YAML file.",
+    ),
+    parquet_output_path: Path | None = typer.Option(
+        None,
+        "--parquet-output",
+        help="Optional output path for the baseline characteristics Parquet file.",
+    ),
+    csv_output_path: Path | None = typer.Option(
+        None,
+        "--csv-output",
+        help="Optional output path for the baseline characteristics CSV file.",
+    ),
+    manifest_path: Path | None = typer.Option(
+        None,
+        "--manifest",
+        help="Optional output path for the baseline characteristics manifest JSON.",
+    ),
+) -> None:
+    """Build the baseline characteristics table for the final T2DM cohort."""
+    manifest = build_baseline_characteristics_from_scenario(
+        repo_root=REPO_ROOT,
+        scenario_path=scenario_path,
+        parquet_output_path=parquet_output_path,
+        csv_output_path=csv_output_path,
+        manifest_path=manifest_path,
+    )
+
+    summary = manifest["summary"]
+
+    typer.echo("T2DM baseline characteristics table build complete.")
+    typer.echo(f"Final cohort path: {manifest['final_cohort_path']}")
+    typer.echo(f"Parquet output: {manifest['parquet_output_path']}")
+    typer.echo(f"CSV output: {manifest['csv_output_path']}")
+    typer.echo(f"Manifest written: {manifest['manifest_path']}")
+    typer.echo(f"Cohort N: {summary['cohort_n']}")
+    typer.echo(f"Baseline table rows: {summary['baseline_table_rows']}")
+    typer.echo(f"Mean age at index: {summary['mean_age_at_index']}")
+    typer.echo(f"Minimum age at index: {summary['min_age_at_index']}")
+    typer.echo(f"Maximum age at index: {summary['max_age_at_index']}")
 
 
 @app.command("doctor")
