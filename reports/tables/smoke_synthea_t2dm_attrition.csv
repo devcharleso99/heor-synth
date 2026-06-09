@@ -2,3 +2,7 @@ step_number,step_id,criterion,input_n,excluded_n,remaining_n,notes
 1,raw_synthea_population,Raw Synthea population with patient records,116,0,116,Starting population from silver patients table.
 2,has_t2dm_diagnosis,At least one qualifying Type 2 Diabetes Mellitus diagnosis,116,107,9,Uses SNOMED code 44054006 from silver conditions table.
 3,adult_at_index,Age >= 18 years at first qualifying T2DM index date,9,0,9,Age calculated at the first qualifying T2DM diagnosis date.
+4,baseline_history_365_days,At least 365 days of observable history before index date,9,0,9,Observable history currently measured from earliest encounter date to index date.
+5,exclude_prior_type_1_diabetes,No prior Type 1 Diabetes Mellitus diagnosis before index date,9,0,9,Uses SNOMED code 46635009 before the T2DM index date.
+6,exclude_pregnancy_window,No pregnancy or gestational-window diagnosis before or at index date,9,0,9,Uses SNOMED code 77386006 before or at the T2DM index date.
+7,final_analytical_cohort,Final Phase 1 analytical cohort,9,0,9,"Patients meeting adult age, baseline history, and exclusion rules."

@@ -61,6 +61,11 @@ def build_t2dm_attrition_table(
         "index_date",
         "age_at_index",
         "meets_adult_age_rule",
+        "observable_history_days_before_index",
+        "meets_baseline_history_rule",
+        "has_prior_t1dm_before_index",
+        "has_pregnancy_window_before_or_at_index",
+        "meets_final_phase1_rules",
     }
 
     missing_index_columns = required_index_columns - set(index_cohort.columns)
@@ -71,9 +76,37 @@ def build_t2dm_attrition_table(
 
     raw_patients_n = patients.select("patient_id").unique().height
     t2dm_patients_n = index_cohort.select("patient_id").unique().height
+
+    adult_index_cohort = index_cohort.filter(pl.col("meets_adult_age_rule") == True)
+
     adult_t2dm_patients_n = (
+        adult_index_cohort
+        .select("patient_id")
+        .unique()
+        .height
+    )
+
+    baseline_eligible = adult_index_cohort.filter(
+        pl.col("meets_baseline_history_rule") == True
+    )
+
+    baseline_eligible_patients_n = baseline_eligible.select("patient_id").unique().height
+
+    after_t1dm_exclusion = baseline_eligible.filter(
+        pl.col("has_prior_t1dm_before_index") == False
+    )
+
+    after_t1dm_exclusion_n = after_t1dm_exclusion.select("patient_id").unique().height
+
+    after_pregnancy_exclusion = after_t1dm_exclusion.filter(
+        pl.col("has_pregnancy_window_before_or_at_index") == False
+    )
+
+    after_pregnancy_exclusion_n = after_pregnancy_exclusion.select("patient_id").unique().height
+
+    final_cohort_n = (
         index_cohort
-        .filter(pl.col("meets_adult_age_rule") == True)
+        .filter(pl.col("meets_final_phase1_rules") == True)
         .select("patient_id")
         .unique()
         .height
@@ -107,6 +140,42 @@ def build_t2dm_attrition_table(
             "remaining_n": adult_t2dm_patients_n,
             "notes": "Age calculated at the first qualifying T2DM diagnosis date.",
         },
+        {
+            "step_number": 4,
+            "step_id": "baseline_history_365_days",
+            "criterion": "At least 365 days of observable history before index date",
+            "input_n": adult_t2dm_patients_n,
+            "excluded_n": adult_t2dm_patients_n - baseline_eligible_patients_n,
+            "remaining_n": baseline_eligible_patients_n,
+            "notes": "Observable history currently measured from earliest encounter date to index date.",
+        },
+        {
+            "step_number": 5,
+            "step_id": "exclude_prior_type_1_diabetes",
+            "criterion": "No prior Type 1 Diabetes Mellitus diagnosis before index date",
+            "input_n": baseline_eligible_patients_n,
+            "excluded_n": baseline_eligible_patients_n - after_t1dm_exclusion_n,
+            "remaining_n": after_t1dm_exclusion_n,
+            "notes": "Uses SNOMED code 46635009 before the T2DM index date.",
+        },
+        {
+            "step_number": 6,
+            "step_id": "exclude_pregnancy_window",
+            "criterion": "No pregnancy or gestational-window diagnosis before or at index date",
+            "input_n": after_t1dm_exclusion_n,
+            "excluded_n": after_t1dm_exclusion_n - after_pregnancy_exclusion_n,
+            "remaining_n": after_pregnancy_exclusion_n,
+            "notes": "Uses SNOMED code 77386006 before or at the T2DM index date.",
+        },
+        {
+            "step_number": 7,
+            "step_id": "final_analytical_cohort",
+            "criterion": "Final Phase 1 analytical cohort",
+            "input_n": after_pregnancy_exclusion_n,
+            "excluded_n": after_pregnancy_exclusion_n - final_cohort_n,
+            "remaining_n": final_cohort_n,
+            "notes": "Patients meeting adult age, baseline history, and exclusion rules.",
+        },
     ]
 
     attrition = pl.DataFrame(rows)
@@ -132,8 +201,15 @@ def build_t2dm_attrition_table(
             "raw_patients_n": raw_patients_n,
             "t2dm_patients_n": t2dm_patients_n,
             "adult_t2dm_patients_n": adult_t2dm_patients_n,
+            "baseline_eligible_patients_n": baseline_eligible_patients_n,
+            "after_t1dm_exclusion_n": after_t1dm_exclusion_n,
+            "after_pregnancy_exclusion_n": after_pregnancy_exclusion_n,
+            "final_cohort_n": final_cohort_n,
             "excluded_no_t2dm_n": raw_patients_n - t2dm_patients_n,
             "excluded_underage_at_index_n": t2dm_patients_n - adult_t2dm_patients_n,
+            "excluded_insufficient_baseline_history_n": adult_t2dm_patients_n - baseline_eligible_patients_n,
+            "excluded_prior_t1dm_n": baseline_eligible_patients_n - after_t1dm_exclusion_n,
+            "excluded_pregnancy_window_n": after_t1dm_exclusion_n - after_pregnancy_exclusion_n,
             "attrition_step_count": attrition.height,
         },
         "output_columns": attrition.columns,

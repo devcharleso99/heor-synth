@@ -611,6 +611,11 @@ def t2dm_index(
     typer.echo(f"Index cohort rows: {summary['index_cohort_rows']}")
     typer.echo(f"Adult index cohort rows: {summary['adult_index_cohort_rows']}")
     typer.echo(f"Underage index cohort rows: {summary['underage_index_cohort_rows']}")
+    typer.echo(f"Baseline-history eligible rows: {summary['baseline_history_eligible_rows']}")
+    typer.echo(f"Baseline-history ineligible rows: {summary['baseline_history_ineligible_rows']}")
+    typer.echo(f"Prior T1DM excluded rows: {summary['prior_t1dm_excluded_rows']}")
+    typer.echo(f"Pregnancy-window excluded rows: {summary['pregnancy_window_excluded_rows']}")
+    typer.echo(f"Final Phase 1 eligible rows: {summary['final_phase1_eligible_rows']}")
 
 
 @app.command("t2dm-attrition")
@@ -658,6 +663,13 @@ def t2dm_attrition(
     typer.echo(f"Adult T2DM patients: {summary['adult_t2dm_patients_n']}")
     typer.echo(f"Excluded without T2DM: {summary['excluded_no_t2dm_n']}")
     typer.echo(f"Excluded underage at index: {summary['excluded_underage_at_index_n']}")
+    typer.echo(f"Baseline eligible patients: {summary['baseline_eligible_patients_n']}")
+    typer.echo(
+        f"Excluded insufficient baseline history: {summary['excluded_insufficient_baseline_history_n']}"
+    )
+    typer.echo(f"Excluded prior T1DM: {summary['excluded_prior_t1dm_n']}")
+    typer.echo(f"Excluded pregnancy window: {summary['excluded_pregnancy_window_n']}")
+    typer.echo(f"Final cohort N: {summary['final_cohort_n']}")
 
 
 @app.command("doctor")
