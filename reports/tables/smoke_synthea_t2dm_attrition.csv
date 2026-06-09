@@ -1,0 +1,4 @@
+step_number,step_id,criterion,input_n,excluded_n,remaining_n,notes
+1,raw_synthea_population,Raw Synthea population with patient records,116,0,116,Starting population from silver patients table.
+2,has_t2dm_diagnosis,At least one qualifying Type 2 Diabetes Mellitus diagnosis,116,107,9,Uses SNOMED code 44054006 from silver conditions table.
+3,adult_at_index,Age >= 18 years at first qualifying T2DM index date,9,0,9,Age calculated at the first qualifying T2DM diagnosis date.

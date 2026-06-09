@@ -24,6 +24,8 @@ from src.ingest.raw_to_bronze import build_bronze_from_scenario
 from src.ingest.bronze_qa import build_bronze_qa_from_scenario
 from src.normalize.bronze_to_silver import build_silver_from_scenario
 from src.normalize.silver_qa import build_silver_qa_from_scenario
+from src.cohorts.t2dm_index import build_t2dm_index_from_scenario
+from src.cohorts.t2dm_attrition import build_t2dm_attrition_from_scenario
 
 
 REQUIRED_DIRECTORIES = [
@@ -567,6 +569,95 @@ def silver_qa(
 
     if fail_on_error and not summary["structural_checks_passed"]:
         raise typer.Exit(code=1)
+
+
+@app.command("t2dm-index")
+def t2dm_index(
+    scenario_path: Path = typer.Option(
+        REPO_ROOT / "configs/scenarios/default_synthea.yaml",
+        "--scenario",
+        help="Path to the Synthea scenario YAML file.",
+    ),
+    output_path: Path | None = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Optional output path for the T2DM index cohort Parquet file.",
+    ),
+    manifest_path: Path | None = typer.Option(
+        None,
+        "--manifest",
+        help="Optional output path for the T2DM index cohort manifest JSON.",
+    ),
+) -> None:
+    """Build the first T2DM index cohort from silver patients and conditions."""
+    manifest = build_t2dm_index_from_scenario(
+        repo_root=REPO_ROOT,
+        scenario_path=scenario_path,
+        output_path=output_path,
+        manifest_path=manifest_path,
+    )
+
+    summary = manifest["summary"]
+
+    typer.echo("T2DM index cohort build complete.")
+    typer.echo(f"Silver directory: {manifest['silver_dir']}")
+    typer.echo(f"Output path: {manifest['output_path']}")
+    typer.echo(f"Manifest written: {manifest['manifest_path']}")
+    typer.echo(f"Total patients: {summary['patients_total']}")
+    typer.echo(f"Total conditions: {summary['conditions_total']}")
+    typer.echo(f"T2DM condition rows: {summary['t2dm_condition_rows']}")
+    typer.echo(f"T2DM patients: {summary['t2dm_patient_count']}")
+    typer.echo(f"Index cohort rows: {summary['index_cohort_rows']}")
+    typer.echo(f"Adult index cohort rows: {summary['adult_index_cohort_rows']}")
+    typer.echo(f"Underage index cohort rows: {summary['underage_index_cohort_rows']}")
+
+
+@app.command("t2dm-attrition")
+def t2dm_attrition(
+    scenario_path: Path = typer.Option(
+        REPO_ROOT / "configs/scenarios/default_synthea.yaml",
+        "--scenario",
+        help="Path to the Synthea scenario YAML file.",
+    ),
+    parquet_output_path: Path | None = typer.Option(
+        None,
+        "--parquet-output",
+        help="Optional output path for the attrition Parquet file.",
+    ),
+    csv_output_path: Path | None = typer.Option(
+        None,
+        "--csv-output",
+        help="Optional output path for the attrition CSV file.",
+    ),
+    manifest_path: Path | None = typer.Option(
+        None,
+        "--manifest",
+        help="Optional output path for the attrition manifest JSON.",
+    ),
+) -> None:
+    """Build the first T2DM attrition table."""
+    manifest = build_t2dm_attrition_from_scenario(
+        repo_root=REPO_ROOT,
+        scenario_path=scenario_path,
+        parquet_output_path=parquet_output_path,
+        csv_output_path=csv_output_path,
+        manifest_path=manifest_path,
+    )
+
+    summary = manifest["summary"]
+
+    typer.echo("T2DM attrition table build complete.")
+    typer.echo(f"Silver directory: {manifest['silver_dir']}")
+    typer.echo(f"Index cohort path: {manifest['index_cohort_path']}")
+    typer.echo(f"Parquet output: {manifest['parquet_output_path']}")
+    typer.echo(f"CSV output: {manifest['csv_output_path']}")
+    typer.echo(f"Manifest written: {manifest['manifest_path']}")
+    typer.echo(f"Raw patients: {summary['raw_patients_n']}")
+    typer.echo(f"T2DM patients: {summary['t2dm_patients_n']}")
+    typer.echo(f"Adult T2DM patients: {summary['adult_t2dm_patients_n']}")
+    typer.echo(f"Excluded without T2DM: {summary['excluded_no_t2dm_n']}")
+    typer.echo(f"Excluded underage at index: {summary['excluded_underage_at_index_n']}")
 
 
 @app.command("doctor")
