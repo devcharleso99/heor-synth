@@ -1,0 +1,111 @@
+﻿study:
+  id: t2dm_phase1
+  name: "Synthetic T2DM Real-World Evidence Cohort Pipeline - Phase 1"
+  disease_area: "Type 2 Diabetes Mellitus"
+  design: "retrospective_longitudinal_incident_cohort"
+  data_source: "Synthea synthetic longitudinal records"
+  phase: 1
+
+objective:
+  primary: >
+    Build a reproducible synthetic RWE pipeline for adults with incident Type 2 Diabetes
+    Mellitus that produces cohort counts, an attrition table, baseline characteristics,
+    treatment-pattern summaries, monitoring summaries, one utilization or survival output,
+    and a transparent synthetic cost summary.
+  framing: >
+    Methods-development and HEOR training project. Synthetic outputs are not intended
+    to estimate real comparative clinical effectiveness.
+
+population:
+  minimum_age_years: 18
+  target_condition: "type_2_diabetes_mellitus"
+  index_event: "first_qualifying_t2dm_diagnosis"
+  index_date_definition: >
+    The first qualifying Type 2 Diabetes Mellitus diagnosis date that occurs after the
+    baseline observation window and satisfies all inclusion and exclusion criteria.
+
+windows:
+  baseline:
+    days_before_index: 365
+    include_index_date: false
+  follow_up:
+    max_months_after_index: 24
+    censor_at_death: true
+    censor_at_end_of_record: true
+
+inclusion_criteria:
+  - id: I1
+    name: "Diagnosis of Type 2 Diabetes Mellitus"
+    concept_ref: "type_2_diabetes_mellitus"
+    required: true
+
+  - id: I2
+    name: "Adult at index date"
+    rule: "age_at_index >= 18"
+    required: true
+
+  - id: I3
+    name: "Incident T2DM after baseline observation window"
+    rule: "first_qualifying_t2dm_date occurs after baseline window"
+    required: true
+
+  - id: I4
+    name: "At least 365 days observable history before index"
+    rule: "observable_history_days_before_index >= 365"
+    required: true
+
+  - id: I5
+    name: "Diabetes-relevant monitoring or laboratory context available if applicable"
+    concept_refs:
+      - "a1c"
+      - "glucose"
+      - "diabetes_monitoring"
+    required: false
+
+exclusion_criteria:
+  - id: E1
+    name: "Prior Type 1 Diabetes Mellitus"
+    concept_ref: "type_1_diabetes_mellitus"
+    timing: "any_before_index"
+    exclude_if_present: true
+
+  - id: E2
+    name: "Pregnancy or gestational diabetes window"
+    concept_ref: "pregnancy"
+    timing: "baseline_or_followup_relevant_window"
+    exclude_if_present: true
+
+phase1_outputs:
+  required:
+    - "cohort_attrition_table"
+    - "baseline_characteristics_table"
+    - "medication_exposure_summary_by_class"
+    - "lab_monitoring_summary"
+    - "utilization_summary"
+    - "synthetic_cost_summary"
+    - "run_manifest"
+  optional:
+    - "kaplan_meier_survival_figure"
+    - "a1c_or_glucose_trajectory"
+
+analysis_language:
+  causal_claims_allowed: false
+  comparative_effectiveness_claims_allowed: false
+  allowed_terms:
+    - "descriptive"
+    - "synthetic"
+    - "methods-development"
+    - "pipeline validation"
+    - "reproducible cohort construction"
+  prohibited_terms:
+    - "real-world treatment effect"
+    - "clinical effectiveness"
+    - "causal effect"
+    - "comparative effectiveness conclusion"
+
+reproducibility:
+  require_raw_input_hashes: true
+  require_concept_set_versioning: true
+  require_run_manifest: true
+  require_fixed_synthea_seed: true
+  require_fixed_reference_date: true

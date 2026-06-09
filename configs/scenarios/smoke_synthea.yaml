@@ -1,0 +1,73 @@
+﻿scenario:
+  id: smoke_synthea
+  name: "Small fixed-seed Synthea smoke-test scenario"
+  description: >
+    Small local Synthea dataset used to verify raw CSV generation, inventory,
+    hashing, and downstream ingestion logic before generating the poster-scale dataset.
+
+synthea:
+  generator: "Synthea"
+  seed: 20260601
+  reference_date: "2026-06-01"
+  reference_date_yyyymmdd: "20260601"
+  population_size: 100
+  state: null
+  city: null
+  export_format: "csv"
+  export_metadata: true
+
+paths:
+  raw_dir: "data/raw/synthea/smoke"
+  bronze_dir: "data/bronze/smoke"
+  silver_dir: "data/silver/smoke"
+  gold_dir: "data/gold/smoke"
+  omop_lite_sqlite_path: "data/gold/smoke/omop_lite.sqlite3"
+  manifest_dir: "reports/manifests"
+
+expected_raw_tables:
+  required:
+    - "patients.csv"
+    - "encounters.csv"
+    - "conditions.csv"
+    - "medications.csv"
+    - "observations.csv"
+    - "procedures.csv"
+    - "careplans.csv"
+  optional:
+    - "allergies.csv"
+    - "immunizations.csv"
+    - "devices.csv"
+    - "payer_transitions.csv"
+    - "payers.csv"
+    - "providers.csv"
+    - "organizations.csv"
+    - "claims.csv"
+    - "claims_transactions.csv"
+    - "supplies.csv"
+    - "imaging_studies.csv"
+
+pipeline:
+  steps:
+    - id: "raw_inventory"
+      name: "Inventory raw Synthea CSV files"
+      output: "reports/manifests/raw_inventory_smoke.json"
+
+    - id: "raw_to_bronze"
+      name: "Convert raw CSV files to typed Parquet"
+      output: "data/bronze/smoke"
+
+quality_checks:
+  require_nonempty_required_tables: true
+  require_patient_id_consistency: true
+  require_date_parse_success: true
+  require_no_future_dates_after_reference_date: true
+  require_manifest_for_each_run: true
+  require_raw_file_hashes: true
+
+metadata:
+  version: "0.1.0"
+  status: "smoke_test"
+  notes:
+    - "This scenario is intentionally small."
+    - "Do not use this for poster-ready cohort counts."
+    - "The poster-scale scenario remains configs/scenarios/default_synthea.yaml."

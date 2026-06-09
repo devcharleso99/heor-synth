@@ -1,0 +1,105 @@
+﻿concept_sets:
+  type_2_diabetes_mellitus:
+    label: "Type 2 Diabetes Mellitus"
+    vocabulary: "SNOMED-CT"
+    codes:
+      - code: "44054006"
+        display: "Diabetes mellitus type 2"
+    use: "target_condition"
+
+  type_1_diabetes_mellitus:
+    label: "Type 1 Diabetes Mellitus"
+    vocabulary: "SNOMED-CT"
+    codes:
+      - code: "46635009"
+        display: "Diabetes mellitus type 1"
+    use: "exclusion"
+
+  pregnancy:
+    label: "Pregnancy"
+    vocabulary: "SNOMED-CT"
+    codes:
+      - code: "77386006"
+        display: "Pregnancy"
+    use: "exclusion_or_gestational_window_control"
+
+  heart_failure_hospitalization:
+    label: "Heart Failure Hospitalization"
+    vocabulary: "SNOMED-CT"
+    codes:
+      - code: "85232005"
+        display: "Heart failure"
+    use: "possible_event_component"
+
+  myocardial_infarction:
+    label: "Myocardial Infarction"
+    vocabulary: "SNOMED-CT"
+    codes:
+      - code: "57054005"
+        display: "Acute myocardial infarction"
+    use: "possible_mace_component"
+
+  ischemic_stroke:
+    label: "Ischemic Stroke"
+    vocabulary: "SNOMED-CT"
+    codes:
+      - code: "230690007"
+        display: "Cerebrovascular accident"
+    use: "possible_mace_component"
+
+  metformin:
+    label: "Metformin"
+    vocabulary: "RxNorm"
+    codes:
+      - code: "860974"
+        display: "Metformin"
+    use: "baseline_treatment_context"
+
+  sglt2_inhibitors:
+    label: "SGLT2 Inhibitors"
+    vocabulary: "RxNorm"
+    codes:
+      - code: "1537213"
+        display: "Canagliflozin"
+      - code: "1373456"
+        display: "Dapagliflozin"
+    use: "phase1_treatment_pattern_analysis"
+
+  glp1_receptor_agonists:
+    label: "GLP-1 Receptor Agonists"
+    vocabulary: "RxNorm"
+    codes:
+      - code: "1991302"
+        display: "Semaglutide"
+      - code: "1151131"
+        display: "Liraglutide"
+    use: "phase1_treatment_pattern_analysis"
+
+  a1c:
+    label: "Hemoglobin A1c"
+    vocabulary: "LOINC"
+    codes: []
+    use: "diabetes_monitoring_context"
+    note: "Populate after inspecting Synthea observations export."
+
+  glucose:
+    label: "Glucose"
+    vocabulary: "LOINC"
+    codes: []
+    use: "diabetes_monitoring_context"
+    note: "Populate after inspecting Synthea observations export."
+
+  diabetes_monitoring:
+    label: "Diabetes-Relevant Monitoring"
+    vocabulary: "mixed"
+    codes: []
+    use: "monitoring_context"
+    note: "Placeholder for labs/procedures/observations discovered in raw Synthea files."
+
+metadata:
+  version: "0.1.0"
+  owner: "heor-synth"
+  status: "draft"
+  notes:
+    - "This is the initial Phase 1 concept configuration."
+    - "Codes should be verified against actual Synthea exports before locking the protocol."
